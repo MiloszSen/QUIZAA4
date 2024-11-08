@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz PLC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .quiz-container {
+            width: 90%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .options button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .options button:hover {
+            background-color: #e0e0e0;
+        }
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .mistakes {
+            font-size: 16px;
+            margin-top: 15px;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Quiz PLC</h1>
+    <div id="question-container">
+        <div class="question" id="question">Pytanie pojawi się tutaj</div>
+        <div class="options">
+            <button onclick="checkAnswer(0)">Odpowiedź 1</button>
+            <button onclick="checkAnswer(1)">Odpowiedź 2</button>
+            <button onclick="checkAnswer(2)">Odpowiedź 3</button>
+            <button onclick="checkAnswer(3)">Odpowiedź 4</button>
+        </div>
+    </div>
+    <div id="result" class="result"></div>
+    <div id="mistakes" class="mistakes"></div>
+</div>
+
+<script>
+    const questions = [
+    {
+        "question": "Jakie opóźnienia są założone dla protokołu Profinet RT?",
+        "options": ["1-10 ms", "1-20 ms", "<1 ms", "1-100 ms"],
+        "answer": "1-10 ms"
+    },
+    {
+        "question": "Czym charakteryzuje się sieć przemysłowa?",
+        "options": ["Szybkością", "Przewodami przeciwiskrowymi", "Rozbudowaną topologią", "Niezawodnością"],
+        "answer": "Niezawodnością"
+    },
+    {
+        "question": "Który język nie jest drabinkowy?",
+        "options": ["FDB", "LD", "Jakiś inny przykład", "Jeszcze inny przykład"],
+        "answer": "FDB"
+    },
+    {
+        "question": "Czym się różni protokół Profinet od standardowego protokołu Ethernet?",
+        "options": ["Spełnia wymogi reżimu czasu rzeczywistego", "Jest bardziej stabilny", "Ma większy zasięg",
+                    "Jest szybszy"],
+        "answer": "Spełnia wymogi reżimu czasu rzeczywistego"
+    },
+    {
+        "question": "Przedstawiony symbol w języku drabinkowym oznacza...",
+        "options": ["Cewkę połączoną z sygnałem wyjściowym", "Wejście logiczne",
+                    "Cewkę połączoną z sygnałem wejściowym", "Blok przerzutnika"],
+        "answer": "Cewkę połączoną z sygnałem wyjściowym"
+    },
+    {
+        "question": "Wybierz fałszywe zdanie o protokole MODBUS:",
+        "options": ["Ciągle się go używa", "Wykorzystuje RS-485 i RS-232", "Jest typu Client/Server",
+                    "Nie istnieje wersja do TCP/IP"],
+        "answer": "Nie istnieje wersja do TCP/IP"
+    },
+    {
+        "question": "Która z poniższych praktyk nie powinna być stosowana w sieciach przemysłowych dla zapewnienia cyberbezpieczeństwa?",
+        "options": ["Okresowe sprawdzanie maszyn", "Sieć przemysłowa powinna być dostępna z internetu",
+                    "Maszyny powinny być enkapsulowane", "Brak dostępu dla niepowołanych pracowników"],
+        "answer": "Sieć przemysłowa powinna być dostępna z internetu"
+    },
+    {
+        "question": "Czym się różni Profinet w wersji NRT od RT i IRT?",
+        "options": ["Pomija konieczność adresacji urządzeń", "Urządzenia mogą być spięte zwykłym przewodem Ethernet",
+                    "Wykorzystuje wszystkie poziomy OSI", "Zapewnia retransmisję przy zgubieniu pakietu"],
+        "answer": "Urządzenia mogą być spięte zwykłym przewodem Ethernet"
+    },
+    {
+        "question": "Skrót HSC oznacza...",
+        "options": ["Licznik o wysokiej częstotliwości", "Wysokoprądowy przełącznik", "Moduł sterujący",
+                    "Sterownik przemysłowy"],
+        "answer": "Licznik o wysokiej częstotliwości"
+    },
+    {
+        "question": "Jaka jest wartość opóźnienia w protokole Profinet IRT?",
+        "options": ["Do 1 ms", "Do 10 ms", "Do 100 ms", "Do 500 ms"],
+        "answer": "Do 1 ms"
+    },
+    {
+        "question": "Która sieć nie jest przemysłowa?",
+        "options": ["1Wire/iWire", "Profinet", "Modbus", "EtherCAT"],
+        "answer": "1Wire/iWire"
+    },
+    {
+        "question": "Wybierz nazwę, która jest przemysłowym protokołem sieciowym:",
+        "options": ["Fidelbus", "Morbius", "HERT", "Modbus"],
+        "answer": "Modbus"
+    },
+    {
+        "question": "Blok FC stosowany w środowisku STEP7 oznacza...",
+        "options": ["Funkcję, której wartość zależy tylko od jej wartości wejściowych", "Blok szybkiego zegara",
+                    "Blok synchronizacyjny", "Funkcję, której wartość zależy od poprzednich cykli"],
+        "answer": "Funkcję, której wartość zależy tylko od jej wartości wejściowych"
+    }
+];
+
+    let shuffledQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let mistakes = [];
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function startQuiz() {
+        shuffledQuestions = [...questions];
+        shuffle(shuffledQuestions); // Mieszamy kolejność pytań
+        currentQuestionIndex = 0;
+        score = 0;
+        mistakes = [];
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        document.getElementById("result").innerHTML = "";
+        const questionData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("question").innerText = questionData.question;
+        
+        const options = document.querySelectorAll(".options button");
+        const shuffledOptions = [...questionData.options];
+        shuffle(shuffledOptions); // Mieszamy odpowiedzi
+
+        options.forEach((button, index) => {
+            button.innerText = shuffledOptions[index];
+            button.disabled = false;
+        });
+    }
+
+    function checkAnswer(selectedOption) {
+        const selectedText = document.querySelectorAll(".options button")[selectedOption].innerText;
+        const answerAnswer = shuffledQuestions[currentQuestionIndex].answer;
+
+        if (selectedText === answerAnswer) {
+            score++;
+        } else {
+            // Zapisujemy błędną odpowiedź
+            mistakes.push({
+                question: shuffledQuestions[currentQuestionIndex].question,
+                selectedAnswer: selectedText,
+                answerAnswer: answerAnswer
+            });
+        }
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById("question-container").style.display = "none";
+        document.getElementById("result").innerText = `Twój wynik: ${score} / ${shuffledQuestions.length}`;
+
+        if (mistakes.length > 0) {
+            let mistakeText = "Błędne odpowiedzi:<br>";
+            mistakes.forEach((mistake, index) => {
+                mistakeText += `${index + 1}. ${mistake.question}<br>Twoja odpowiedź: ${mistake.selectedAnswer} <br>Poprawna odpowiedź: ${mistake.answerAnswer}<br><br>`;
+            });
+            document.getElementById("mistakes").innerHTML = mistakeText;
+        } else {
+            document.getElementById("mistakes").innerText = "Gratulacje! Wszystkie odpowiedzi były poprawne.";
+        }
+    }
+
+    // Startujemy quiz na początku
+    startQuiz();
+</script>
+
+</body>
+</html>
